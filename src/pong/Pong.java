@@ -19,6 +19,7 @@ public class Pong implements ActionListener{
 		renderer = new Renderer();
 		jframe.setSize(width, height);
 		jframe.setVisible(true);
+		jframe.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		jframe.add(renderer);
 		timer.start();
 	}
