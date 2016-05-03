@@ -9,9 +9,53 @@ public class Ball {
 	public int x, y, width = 25, height = 25;
 	public int motionX, motionY;
 	public Random random;
+	private Pong pong;
+	public int hitAmount;
+	
 	
 	public Ball(Pong pong) {
-		random = new Random();
+		this.pong = pong;
+		this.random = new Random();
+		spawn();
+	}
+	
+	public void update(Paddle paddle1, Paddle paddle2) {
+		int speed = 5;
+		this.x += motionX * speed;
+		this.y += motionY * speed;
+		if (this.y + height > pong.height || this.y < 0) {
+			if (this.motionY < 0) {
+				this.motionY = random.nextInt(4);
+			} else {
+				this.motionY = -random.nextInt(4);
+			}
+		}
+		if (checkCollision(paddle1) == 1) {
+			this.motionX = 2 + (hitAmount / 5);
+			this.motionY = -2 + random.nextInt(4);
+			if (motionY == 0) {
+				motionY = 1;
+			}
+			hitAmount++;
+		} else if (checkCollision(paddle2) == 1) {
+			this.motionX = -2 - (hitAmount / 5);
+			this.motionY = -2 + random.nextInt(4);
+			if (motionY == 0) {
+				motionY = 1;
+			}
+			hitAmount++;
+		}
+		if (checkCollision(paddle1) == 2) {
+			paddle2.score++;
+			spawn();
+		} else if (checkCollision(paddle2) == 2) {
+			paddle1.score++;
+			spawn();
+		}
+	}
+	
+	public void spawn() {
+		this.hitAmount = 0;
 		this.x = pong.width / 2 - this.width / 2;
 		this.y = pong.height / 2 - this.height / 2;
 		this.motionY = -2 + random.nextInt(4);
@@ -27,34 +71,11 @@ public class Ball {
 		}
 	}
 	
-	public void update(Paddle paddle1, Paddle paddle2) {
-		this.x += motionX;
-		this.y += motionY;
-		if (checkCollision(paddle1) == 1) {
-			this.motionX = 1;
-			this.motionY = -2 + random.nextInt(4);
-			if (motionY == 0) {
-				motionY = 1;
-			}
-		} else if (checkCollision(paddle2) == 1) {
-			this.motionX = -1;
-			this.motionY = -2 + random.nextInt(4);
-			if (motionY == 0) {
-				motionY = 1;
-			}
-		}
-		if (checkCollision(paddle1) == 2) {
-			paddle2.score++;
-		} else if (checkCollision(paddle2) == 2) {
-			paddle1.score++;
-		}
-	}
-	
 	public int checkCollision(Paddle paddle) {
-		if (this.x < paddle.x +paddle.width && this.x + width > paddle.x && this.y + height > paddle.y) {
-			return 1;
-		} else if ((paddle.x > x + width && paddle.paddleNumber == 1) || (paddle.x < x && paddle.paddleNumber == 2)) {
-			return 2;
+		if (this.x < paddle.x + paddle.width && this.x + width > paddle.x && this.y  < paddle.y + paddle.height && this.y + height > paddle.y) {
+			return 1; //bounce
+		} else if ((paddle.x > x && paddle.paddleNumber == 1) || (paddle.x < x - width && paddle.paddleNumber == 2)) {
+			return 2; //score
 		}
 		return 0; //nothing
 	}
