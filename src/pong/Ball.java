@@ -25,9 +25,11 @@ public class Ball {
 		this.y += motionY * speed;
 		if (this.y + height > pong.height || this.y < 0) {
 			if (this.motionY < 0) {
-				this.motionY = random.nextInt(4);
+				this.y = 0;
+				this.motionY = random.nextInt(3) + 1;
 			} else {
-				this.motionY = -random.nextInt(4);
+				this.y = pong.height - height;
+				this.motionY = -random.nextInt(3) - 1;
 			}
 		}
 		if (checkCollision(paddle1) == 1) {
