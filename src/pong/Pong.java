@@ -23,10 +23,10 @@ public class Pong implements ActionListener, KeyListener{
 	public Ball ball;
 	public int botDifficulty, botCooldown = 0, botMoves;
 	
-	public boolean bot = false;
+	public boolean bot = false, selectingDifficulty;
 	public boolean w, s, up, down;
 	
-	public int gameStatus = 0; // 0 = stopped, 1 = paused 2 = playing
+	public int gameStatus = 0, scoreLimit; // 0 = stopped, 1 = paused 2 = playing
 	
 	public Pong() {
 		Timer timer = new Timer(20, this);
@@ -38,7 +38,6 @@ public class Pong implements ActionListener, KeyListener{
 		jframe.add(renderer);
 		jframe.addKeyListener(this);
 		
-		start();
 		timer.start();
 	}
 
@@ -46,6 +45,7 @@ public class Pong implements ActionListener, KeyListener{
 		player1 = new Paddle(this, 1);
 		player2 = new Paddle(this, 2);
 		ball = new Ball(this);
+		gameStatus = 2;
 	}
 	
 	public void update() {
@@ -99,10 +99,18 @@ public class Pong implements ActionListener, KeyListener{
 			g.setFont(new Font("Arial", 1, 40));
 			g.drawString("PONG", width / 2 - 75, 50);
 			
+			if (!selectingDifficulty) {
+				g.setFont(new Font("Arial", 1, 30));
+				g.drawString("Press Space to Play", width / 2 - 140, height / 2 - 25);
+				
+				g.drawString("Press Shift to Play with Bot", width / 2 - 200, height / 2 + 25);
+			}
+		}
+		if (selectingDifficulty) {
+			String strBotDiff = botDifficulty == 0 ? "Easy" : (botDifficulty == 1 ? "Medium" : "Hard");
 			g.setFont(new Font("Arial", 1, 30));
-			g.drawString("Press Space to Play", width / 2 - 140, height / 2 - 25);
-			
-			g.drawString("Press Shift to Play with Bot", width / 2 - 200, height / 2 + 25);
+			g.drawString("Bot Difficulty: " + strBotDiff, width / 2 -150, height / 2 - 25);
+			g.drawString("Press Space to Play", width / 2 - 140, height / 2 + 25);
 		}
 		if (gameStatus == 2 || gameStatus == 1) {
 			g.setColor(Color.WHITE);
@@ -152,13 +160,39 @@ public class Pong implements ActionListener, KeyListener{
 			up = true;
 		} else if (id == KeyEvent.VK_DOWN) {
 			down = true;
+		} else if (id == KeyEvent.VK_RIGHT) {
+			if (selectingDifficulty) {
+				if (botDifficulty < 2) {
+					botDifficulty++;
+				} else {
+					botDifficulty = 0;
+				}
+			} else if (gameStatus == 0) {
+				scoreLimit--;
+			}
+		} else if (id == KeyEvent.VK_LEFT) {
+			if (selectingDifficulty) {
+				if (botDifficulty > 0) {
+					botDifficulty--;
+				} else {
+					botDifficulty = 2;
+				}
+			} else if (gameStatus == 0) {
+				scoreLimit++;
+			}
 		} else if (id == KeyEvent.VK_SHIFT && gameStatus == 0) {
 			bot = true;
-			gameStatus = 2;
+			selectingDifficulty = true;
 		} else if (id == KeyEvent.VK_SPACE) {
-			if (gameStatus == 0 || gameStatus == 1) {
+			if (gameStatus == 0 || selectingDifficulty) {
+				if (!selectingDifficulty) {
+					bot = false;
+				} else {
+					selectingDifficulty = false;
+				}
+				start();
+			} else if (gameStatus == 1) {
 				gameStatus = 2;
-				bot = false;
 			} else if (gameStatus == 2) {
 				gameStatus = 1;
 			}
