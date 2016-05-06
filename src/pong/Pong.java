@@ -12,7 +12,7 @@ import java.awt.event.KeyListener;
 
 import javax.swing.JFrame;
 import javax.swing.Timer;
-
+ // Code based on Youtube tutorial by Jaryt Bustard
 public class Pong implements ActionListener, KeyListener{
 // 31:25 on video
 	public static Pong pong;
@@ -26,7 +26,7 @@ public class Pong implements ActionListener, KeyListener{
 	public boolean bot = false, selectingDifficulty;
 	public boolean w, s, up, down;
 	
-	public int gameStatus = 0, scoreLimit; // 0 = stopped, 1 = paused 2 = playing
+	public int gameStatus = 0, scoreLimit = 7, playerWon; // 0 = stopped, 1 = paused 2 = playing
 	
 	public Pong() {
 		Timer timer = new Timer(20, this);
@@ -49,6 +49,14 @@ public class Pong implements ActionListener, KeyListener{
 	}
 	
 	public void update() {
+		if (player1.score >= scoreLimit) {
+			playerWon = 1;
+			gameStatus = 3;
+		} else if (player2.score >= scoreLimit) {
+			playerWon = 2;
+			gameStatus = 3;
+		}
+		
 		if (w) {
 			player1.move(true);
 		}
@@ -82,7 +90,7 @@ public class Pong implements ActionListener, KeyListener{
 				} else if (botDifficulty == 1) {
 					botCooldown = 15;	
 				} else if (botDifficulty == 2) {
-					botCooldown = 10;	
+					botCooldown = 5;	
 				}
 			}
 		}
@@ -104,12 +112,14 @@ public class Pong implements ActionListener, KeyListener{
 				g.drawString("Press Space to Play", width / 2 - 140, height / 2 - 25);
 				
 				g.drawString("Press Shift to Play with Bot", width / 2 - 200, height / 2 + 25);
+				
+				g.drawString("<< Score Limit: " + scoreLimit + " >>", width / 2 - 125, height / 2 + 75);
 			}
 		}
 		if (selectingDifficulty) {
 			String strBotDiff = botDifficulty == 0 ? "Easy" : (botDifficulty == 1 ? "Medium" : "Hard");
 			g.setFont(new Font("Arial", 1, 30));
-			g.drawString("Bot Difficulty: " + strBotDiff, width / 2 -150, height / 2 - 25);
+			g.drawString("<< Bot Difficulty: " + strBotDiff + " >>", width / 2 - 180, height / 2 - 25);
 			g.drawString("Press Space to Play", width / 2 - 140, height / 2 + 25);
 		}
 		if (gameStatus == 2 || gameStatus == 1) {
@@ -132,6 +142,20 @@ public class Pong implements ActionListener, KeyListener{
 			g.setColor(Color.WHITE);
 			g.setFont(new Font("Arial", 1, 50));
 			g.drawString("PAUSED", width / 2 - 100, height / 2 - 25);
+		}
+		if (gameStatus == 3) {
+			g.setColor(Color.WHITE);
+			g.setFont(new Font("Arial", 1, 50));
+			g.drawString("PONG", width / 2 - 75, 50);
+			if (!bot) {
+				g.drawString("Player " + playerWon + " Wins!", width / 2 - 165, 200);
+			} else {
+				g.drawString("The Bot Wins!", width / 2 - 165, 200);
+			}
+			
+			g.setFont(new Font("Arial", 1, 30));
+			g.drawString("Press Space to Play again", width / 2 - 185, height / 2 - 25);
+			g.drawString("Press ESC for Menu", width / 2 - 140, height / 2 + 25);			
 		}
 	}
 	
@@ -168,7 +192,7 @@ public class Pong implements ActionListener, KeyListener{
 					botDifficulty = 0;
 				}
 			} else if (gameStatus == 0) {
-				scoreLimit--;
+				scoreLimit++;
 			}
 		} else if (id == KeyEvent.VK_LEFT) {
 			if (selectingDifficulty) {
@@ -177,14 +201,14 @@ public class Pong implements ActionListener, KeyListener{
 				} else {
 					botDifficulty = 2;
 				}
-			} else if (gameStatus == 0) {
-				scoreLimit++;
+			} else if (gameStatus == 0 && scoreLimit > 1) {
+				scoreLimit--;
 			}
 		} else if (id == KeyEvent.VK_SHIFT && gameStatus == 0) {
 			bot = true;
 			selectingDifficulty = true;
 		} else if (id == KeyEvent.VK_SPACE) {
-			if (gameStatus == 0 || selectingDifficulty) {
+			if (gameStatus == 0 || gameStatus == 3) {
 				if (!selectingDifficulty) {
 					bot = false;
 				} else {
